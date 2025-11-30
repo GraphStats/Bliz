@@ -1,6 +1,6 @@
 {
     "name": "@graphstats/bliz",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "description": "A lightweight Vite-like dev server and build tool",
     "main": "src/cli.js",
     "bin": {
