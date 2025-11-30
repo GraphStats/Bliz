@@ -11,9 +11,9 @@ A lightweight, Vite‑like development server and build tool built on top of **e
 
 ## Installation
 ```bash
-npm i -g bliz   # global install
+npm i @graphstats/bliz   # global install
 # or as a dev dependency in a project
-npm i -D bliz
+npm i -D @graphstats/bliz
 ```
 
 ## Usage
