@@ -11,10 +11,33 @@ module.exports = function devServer(userConfig = {}) {
     const port = userConfig.port || 3000;
 
     const server = http.createServer((req, res) => {
+        // Auto-detect entry for root request
+        let entryPath = null;
+        if (userConfig.entry) {
+            entryPath = path.resolve(root, userConfig.entry);
+        } else {
+            const possibleEntries = [
+                path.join(root, 'src', 'index.html'),
+                path.join(root, 'index.html'),
+            ];
+            for (const entry of possibleEntries) {
+                if (fs.existsSync(entry)) {
+                    entryPath = entry;
+                    break;
+                }
+            }
+        }
+
         let filePath = path.join(root, req.url);
-        if (fs.statSync(filePath).isDirectory()) {
+
+        // If root request, try to serve entry file
+        if (req.url === '/' && entryPath) {
+            filePath = entryPath;
+        } else if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+            // Fallback for other directories
             filePath = path.join(filePath, 'index.html');
         }
+
         fs.readFile(filePath, (err, data) => {
             if (err) {
                 res.statusCode = 404;

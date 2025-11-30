@@ -10,12 +10,32 @@ module.exports = async function builder(userConfig = {}) {
     const outdir = userConfig.outdir ? path.resolve(root, userConfig.outdir) : defaultOutdir;
 
     // Determine entry points
-    const htmlEntry = path.join(root, 'index.html');
-    const jsEntry = path.join(root, 'src', 'index.js');
-    const customEntry = userConfig.entry ? path.resolve(root, userConfig.entry) : null;
+    let entryPath = null;
+    let isHtmlProject = false;
+    let isJsProject = false;
 
-    const isHtmlProject = customEntry ? customEntry.endsWith('.html') : fs.existsSync(htmlEntry);
-    const isJsProject = customEntry ? customEntry.endsWith('.js') : fs.existsSync(jsEntry);
+    if (userConfig.entry) {
+        entryPath = path.resolve(root, userConfig.entry);
+        isHtmlProject = entryPath.endsWith('.html');
+        isJsProject = entryPath.endsWith('.js');
+    } else {
+        // Auto-detect entry
+        const possibleEntries = [
+            { path: path.join(root, 'src', 'index.html'), type: 'html' },
+            { path: path.join(root, 'index.html'), type: 'html' },
+            { path: path.join(root, 'src', 'index.js'), type: 'js' },
+            { path: path.join(root, 'index.js'), type: 'js' }
+        ];
+
+        for (const entry of possibleEntries) {
+            if (fs.existsSync(entry.path)) {
+                entryPath = entry.path;
+                isHtmlProject = entry.type === 'html';
+                isJsProject = entry.type === 'js';
+                break;
+            }
+        }
+    }
 
     try {
         // Clean dist directory
@@ -24,12 +44,12 @@ module.exports = async function builder(userConfig = {}) {
         if (isHtmlProject) {
             // HTML Project: Copy static files
             console.log('📦 Building HTML project...');
-            const entryPath = customEntry || htmlEntry;
-            // Ensure the main HTML file exists
-            if (!fs.existsSync(entryPath)) {
+
+            if (!entryPath || !fs.existsSync(entryPath)) {
                 console.error(`❌ Entry HTML file not found: ${entryPath}`);
                 process.exit(1);
             }
+
             // Copy everything except ignored patterns
             await fs.copy(root, outdir, {
                 filter: (src) => {
@@ -50,8 +70,8 @@ module.exports = async function builder(userConfig = {}) {
         } else if (isJsProject) {
             // JS Project: Bundle with esbuild
             console.log('📦 Building JS project with esbuild...');
-            const entryPath = customEntry || jsEntry;
-            if (!fs.existsSync(entryPath)) {
+
+            if (!entryPath || !fs.existsSync(entryPath)) {
                 console.error(`❌ Entry JS file not found: ${entryPath}`);
                 process.exit(1);
             }
