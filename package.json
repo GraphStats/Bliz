@@ -9,8 +9,7 @@
     "scripts": {
         "dev": "node src/cli.js dev",
         "build": "node src/cli.js build",
-        "test": "echo \"No tests yet\"",
-        "publish": "npm publish"
+        "test": "echo \"No tests yet\""
     },
     "keywords": [
         "dev-server",
