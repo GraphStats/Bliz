@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/index.js"],
-  "sourcesContent": ["// src/index.js\r\nconsole.log('Hello from Bliz!');\r\n"],
-  "mappings": "MACA,QAAQ,IAAI,kBAAkB",
-  "names": []
-}
