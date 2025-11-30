@@ -30,3 +30,5 @@ The dev server serves files from the project root (or the `root` option) on port
 
 ## License
 MIT
+
+UNDER BETA!
