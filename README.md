@@ -47,4 +47,5 @@ npm i @graphstats/bliz
 Because it will not add the package to the PATH!
 
 MIT
+
 **⚠️ UNDER BETA!**
