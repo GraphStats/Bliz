@@ -24,19 +24,5 @@ npm i -g @graphstats/bliz
 
 ### As a dev dependency
 
-```bash
-npm i -D @graphstats/bliz
-```
-
----
-
-```bash
-bliz build
-```
-
----
-
-## License
-
 MIT
 **⚠️ UNDER BETA!**
