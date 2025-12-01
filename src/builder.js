@@ -54,8 +54,12 @@ module.exports = async function builder(userConfig = {}) {
             console.log('✨ Build completed successfully (HTML mode).');
             console.log(`📁 Output: ${outdir}`);
         } else if (isJsProject) {
-            // JS Project: Bundle with esbuild
-            console.log('📦 Building JS project with esbuild...');
+            // Check for Node.js hashbang
+            const content = await fs.readFile(entryPath, 'utf8');
+            const isNode = content.startsWith('#!') && content.includes('node');
+            const platform = userConfig.platform || (isNode ? 'node' : 'browser');
+
+            console.log(`📦 Building JS project with esbuild (platform: ${platform})...`);
 
             if (!entryPath || !fs.existsSync(entryPath)) {
                 console.error(`❌ Entry JS file not found: ${entryPath}`);
@@ -67,7 +71,7 @@ module.exports = async function builder(userConfig = {}) {
                 minify: true,
                 sourcemap: true,
                 outdir,
-                platform: 'browser',
+                platform,
                 target: ['esnext'],
                 define: { 'process.env.NODE_ENV': '"production"' },
                 plugins: userConfig.plugins || []
