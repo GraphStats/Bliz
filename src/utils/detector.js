@@ -115,11 +115,15 @@ async function findEntry(root, userConfig = {}) {
         }
     }
 
-    // Check for Next.js App Router
+    // Check for Next.js App Router or Pages Router
     if (fs.existsSync(path.join(root, 'app', 'page.tsx')) ||
         fs.existsSync(path.join(root, 'app', 'page.js')) ||
         fs.existsSync(path.join(root, 'src', 'app', 'page.tsx')) ||
-        fs.existsSync(path.join(root, 'src', 'app', 'page.js'))) {
+        fs.existsSync(path.join(root, 'src', 'app', 'page.js')) ||
+        fs.existsSync(path.join(root, 'pages', 'index.tsx')) ||
+        fs.existsSync(path.join(root, 'pages', 'index.js')) ||
+        fs.existsSync(path.join(root, 'src', 'pages', 'index.tsx')) ||
+        fs.existsSync(path.join(root, 'src', 'pages', 'index.js'))) {
         return {
             path: root,
             type: 'framework',

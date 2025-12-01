@@ -50,35 +50,6 @@ module.exports = async function builder(userConfig = {}) {
             // HTML Project: Copy static files
             console.log('📦 Building HTML project...');
 
-            if (!entryPath || !fs.existsSync(entryPath)) {
-                console.error(`❌ Entry HTML file not found: ${entryPath}`);
-                process.exit(1);
-            }
-
-            // Copy everything except ignored patterns and the output directory itself
-            await fs.copy(root, outdir, {
-                filter: (src) => {
-                    // Prevent copying the output directory into itself
-                    if (path.resolve(src) === path.resolve(outdir)) return false;
-
-                    const rel = path.relative(root, src);
-                    const ignore = [
-                        'node_modules',
-                        '.git',
-                        'bliz.config.js',
-                        'package.json',
-                        'package-lock.json',
-                        path.basename(outdir) // Ignore the output directory name
-                    ];
-                    return !ignore.some(i => rel.startsWith(i));
-                }
-            });
-            console.log('✨ Build completed successfully (HTML mode).');
-            console.log(`📁 Output: ${outdir}`);
-        } else if (isJsProject) {
-            // Check for Node.js hashbang
-            const content = await fs.readFile(entryPath, 'utf8');
-            const isNode = content.startsWith('#!') && content.includes('node');
             const platform = userConfig.platform || (isNode ? 'node' : 'browser');
 
             console.log(`📦 Building JS project with esbuild (platform: ${platform})...`);
