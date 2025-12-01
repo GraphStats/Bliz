@@ -78,21 +78,30 @@ async function findEntry(root, userConfig = {}) {
 
     // 2. Package.json main
     const pkgPath = path.join(root, 'package.json');
+    console.log('DEBUG: Checking package.json at', pkgPath);
     if (fs.existsSync(pkgPath)) {
         try {
             const pkg = await fs.readJson(pkgPath);
+            console.log('DEBUG: package.json main:', pkg.main);
             if (pkg.main) {
                 const mainPath = path.resolve(root, pkg.main);
+                console.log('DEBUG: Resolved main path:', mainPath);
                 if (fs.existsSync(mainPath)) {
+                    console.log('DEBUG: Main file exists');
                     return {
                         path: mainPath,
                         type: mainPath.endsWith('.html') ? 'html' : 'js'
                     };
+                } else {
+                    console.log('DEBUG: Main file does NOT exist');
                 }
             }
         } catch (e) {
+            console.log('DEBUG: Error reading package.json:', e);
             // Ignore invalid package.json
         }
+    } else {
+        console.log('DEBUG: package.json not found');
     }
 
     // 3. Framework Detection

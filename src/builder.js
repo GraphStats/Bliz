@@ -8,8 +8,11 @@ module.exports = async function builder(userConfig = {}) {
     const defaultOutdir = path.join(root, 'dist');
     const outdir = userConfig.outdir ? path.resolve(root, userConfig.outdir) : defaultOutdir;
 
+    console.log('DEBUG: Builder Root:', root);
+
     // Determine entry points
     const entry = await findEntry(root, userConfig);
+    console.log('DEBUG: Detected Entry:', entry);
 
     if (!entry) {
         console.error('❌ No recognizable entry point found!');
@@ -24,7 +27,6 @@ module.exports = async function builder(userConfig = {}) {
 
         const { execSync } = require('child_process');
         try {
-            // Prefer user's build script if available
             const pkg = await fs.readJson(path.join(root, 'package.json')).catch(() => ({}));
             const buildCmd = pkg.scripts && pkg.scripts.build ? 'npm run build' : `npx ${entry.framework} build`;
 
@@ -39,17 +41,52 @@ module.exports = async function builder(userConfig = {}) {
     }
 
     const entryPath = entry.path;
-    const isHtmlProject = entry.type === 'html';
-    const isJsProject = entry.type === 'js';
+
+    // Normalize type
+    const isHtml = entry.type === 'html';
+    const isJs = entry.type === 'js';
+
+    console.log(`DEBUG: Type check - HTML: ${isHtml}, JS: ${isJs} (type: '${entry.type}')`);
 
     try {
         // Clean dist directory
         await fs.emptyDir(outdir);
 
-        if (isHtmlProject) {
+        if (isHtml) {
             // HTML Project: Copy static files
             console.log('📦 Building HTML project...');
 
+            if (!entryPath || !fs.existsSync(entryPath)) {
+                console.error(`❌ Entry HTML file not found: ${entryPath}`);
+                process.exit(1);
+            }
+
+            // Copy everything except ignored patterns and the output directory itself
+            const files = await fs.readdir(root);
+            for (const file of files) {
+                // Prevent copying the output directory into itself
+                if (path.resolve(path.join(root, file)) === path.resolve(outdir)) continue;
+
+                const rel = file;
+                const ignore = [
+                    'node_modules',
+                    '.git',
+                    'bliz.config.js',
+                    'package.json',
+                    'package-lock.json',
+                    path.basename(outdir)
+                ];
+
+                if (!ignore.some(i => rel.startsWith(i))) {
+                    await fs.copy(path.join(root, file), path.join(outdir, file));
+                }
+            }
+            console.log('✨ Build completed successfully (HTML mode).');
+            console.log(`📁 Output: ${outdir}`);
+        } else if (isJs) {
+            // Check for Node.js hashbang
+            const content = await fs.readFile(entryPath, 'utf8');
+            const isNode = content.startsWith('#!') && content.includes('node');
             const platform = userConfig.platform || (isNode ? 'node' : 'browser');
 
             console.log(`📦 Building JS project with esbuild (platform: ${platform})...`);
@@ -71,8 +108,7 @@ module.exports = async function builder(userConfig = {}) {
             });
             console.log('✨ Build completed successfully (JS mode).');
         } else {
-            console.error('❌ No recognizable entry point found!');
-            console.error('   Provide either an index.html, src/index.js, or specify `entry` in bliz.config.js');
+            console.error(`❌ Unknown entry type: ${entry.type}`);
             process.exit(1);
         }
     } catch (err) {

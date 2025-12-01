@@ -1,0 +1,18 @@
+DEBUG: Builder Root: C:\Users\GraphStats\Desktop\Code\Projet en cours\NPM\Blitz
+DEBUG: User Config: {
+  "root": "C:\\Users\\GraphStats\\Desktop\\Code\\Projet en cours\\NPM\\Blitz",
+  "port": 3000,
+  "plugins": []
+}
+DEBUG: Checking package.json at C:\Users\GraphStats\Desktop\Code\Projet en cours\NPM\Blitz\package.json
+DEBUG: package.json main: src/cli.js
+DEBUG: Resolved main path: C:\Users\GraphStats\Desktop\Code\Projet en cours\NPM\Blitz\src\cli.js
+DEBUG: Main file exists
+DEBUG: Detected Entry: {
+  path: 'C:\\Users\\GraphStats\\Desktop\\Code\\Projet en cours\\NPM\\Blitz\\src\\cli.js',
+  type: 'js'
+}
+DEBUG: isHtmlProject: false
+DEBUG: isJsProject: true
+❌ No recognizable entry point found!
+   Provide either an index.html, src/index.js, or specify `entry` in bliz.config.js
