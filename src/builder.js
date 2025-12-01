@@ -1,5 +1,3 @@
-// src/builder.js
-// src/builder.js
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs-extra');
@@ -19,6 +17,27 @@ module.exports = async function builder(userConfig = {}) {
         process.exit(1);
     }
 
+    // Framework Handling
+    if (entry.type === 'framework') {
+        console.log(`📦 Detected ${entry.framework} project.`);
+        console.log('🚀 Delegating build to framework CLI...');
+
+        const { execSync } = require('child_process');
+        try {
+            // Prefer user's build script if available
+            const pkg = await fs.readJson(path.join(root, 'package.json')).catch(() => ({}));
+            const buildCmd = pkg.scripts && pkg.scripts.build ? 'npm run build' : `npx ${entry.framework} build`;
+
+            console.log(`> ${buildCmd}`);
+            execSync(buildCmd, { stdio: 'inherit', cwd: root });
+            console.log('✨ Build completed successfully (Framework mode).');
+            return;
+        } catch (err) {
+            console.error('❌ Framework build failed:', err.message);
+            process.exit(1);
+        }
+    }
+
     const entryPath = entry.path;
     const isHtmlProject = entry.type === 'html';
     const isJsProject = entry.type === 'js';
@@ -36,17 +55,20 @@ module.exports = async function builder(userConfig = {}) {
                 process.exit(1);
             }
 
-            // Copy everything except ignored patterns
+            // Copy everything except ignored patterns and the output directory itself
             await fs.copy(root, outdir, {
                 filter: (src) => {
+                    // Prevent copying the output directory into itself
+                    if (path.resolve(src) === path.resolve(outdir)) return false;
+
                     const rel = path.relative(root, src);
                     const ignore = [
                         'node_modules',
-                        'dist',
                         '.git',
                         'bliz.config.js',
                         'package.json',
-                        'package-lock.json'
+                        'package-lock.json',
+                        path.basename(outdir) // Ignore the output directory name
                     ];
                     return !ignore.some(i => rel.startsWith(i));
                 }

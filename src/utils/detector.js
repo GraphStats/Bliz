@@ -95,8 +95,40 @@ async function findEntry(root, userConfig = {}) {
         }
     }
 
-    // 3. Smart Search
-    const ignores = ['node_modules', 'dist', '.git', 'coverage', 'test', 'tests'];
+    // 3. Framework Detection
+    // Check for config files
+    const frameworks = [
+        { name: 'nextjs', config: 'next.config.js', type: 'framework' },
+        { name: 'nextjs', config: 'next.config.mjs', type: 'framework' },
+        { name: 'remix', config: 'remix.config.js', type: 'framework' },
+        { name: 'vite', config: 'vite.config.js', type: 'framework' },
+        { name: 'vite', config: 'vite.config.ts', type: 'framework' }
+    ];
+
+    for (const fw of frameworks) {
+        if (fs.existsSync(path.join(root, fw.config))) {
+            return {
+                path: root,
+                type: 'framework',
+                framework: fw.name
+            };
+        }
+    }
+
+    // Check for Next.js App Router
+    if (fs.existsSync(path.join(root, 'app', 'page.tsx')) ||
+        fs.existsSync(path.join(root, 'app', 'page.js')) ||
+        fs.existsSync(path.join(root, 'src', 'app', 'page.tsx')) ||
+        fs.existsSync(path.join(root, 'src', 'app', 'page.js'))) {
+        return {
+            path: root,
+            type: 'framework',
+            framework: 'nextjs'
+        };
+    }
+
+    // 4. Smart Search
+    const ignores = ['node_modules', 'dist', '.git', 'coverage', 'test', 'tests', '.next', '.cache'];
     const candidates = await findCandidates(root, ignores);
 
     if (candidates.length > 0) {
