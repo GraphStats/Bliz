@@ -6,6 +6,7 @@ const fs = require('fs');
 const mime = require('mime-types');
 const chokidar = require('chokidar');
 const WebSocket = require('ws');
+const { findEntry } = require('./utils/detector');
 
 module.exports = function devServer(userConfig = {}) {
     const root = userConfig.root || process.cwd();
@@ -40,22 +41,14 @@ module.exports = function devServer(userConfig = {}) {
         exec(`${start} ${url}`);
     };
 
-    const server = http.createServer((req, res) => {
+    const server = http.createServer(async (req, res) => {
         // Auto-detect entry for root request
         let entryPath = null;
-        if (userConfig.entry) {
-            entryPath = path.resolve(root, userConfig.entry);
-        } else {
-            const possibleEntries = [
-                path.join(root, 'src', 'index.html'),
-                path.join(root, 'index.html'),
-            ];
-            for (const entry of possibleEntries) {
-                if (fs.existsSync(entry)) {
-                    entryPath = entry;
-                    break;
-                }
-            }
+        const entry = await findEntry(root, userConfig);
+
+        // Only use HTML entries for the dev server for now
+        if (entry && entry.type === 'html') {
+            entryPath = entry.path;
         }
 
         let filePath = path.join(root, req.url);

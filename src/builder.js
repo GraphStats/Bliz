@@ -3,6 +3,7 @@
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs-extra');
+const { findEntry } = require('./utils/detector');
 
 module.exports = async function builder(userConfig = {}) {
     const root = userConfig.root || process.cwd();
@@ -10,32 +11,17 @@ module.exports = async function builder(userConfig = {}) {
     const outdir = userConfig.outdir ? path.resolve(root, userConfig.outdir) : defaultOutdir;
 
     // Determine entry points
-    let entryPath = null;
-    let isHtmlProject = false;
-    let isJsProject = false;
+    const entry = await findEntry(root, userConfig);
 
-    if (userConfig.entry) {
-        entryPath = path.resolve(root, userConfig.entry);
-        isHtmlProject = entryPath.endsWith('.html');
-        isJsProject = entryPath.endsWith('.js');
-    } else {
-        // Auto-detect entry
-        const possibleEntries = [
-            { path: path.join(root, 'src', 'index.html'), type: 'html' },
-            { path: path.join(root, 'index.html'), type: 'html' },
-            { path: path.join(root, 'src', 'index.js'), type: 'js' },
-            { path: path.join(root, 'index.js'), type: 'js' }
-        ];
-
-        for (const entry of possibleEntries) {
-            if (fs.existsSync(entry.path)) {
-                entryPath = entry.path;
-                isHtmlProject = entry.type === 'html';
-                isJsProject = entry.type === 'js';
-                break;
-            }
-        }
+    if (!entry) {
+        console.error('❌ No recognizable entry point found!');
+        console.error('   Provide either an index.html, src/index.js, or specify `entry` in bliz.config.js');
+        process.exit(1);
     }
+
+    const entryPath = entry.path;
+    const isHtmlProject = entry.type === 'html';
+    const isJsProject = entry.type === 'js';
 
     try {
         // Clean dist directory
