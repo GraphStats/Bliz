@@ -16,13 +16,35 @@
 
 ## Installation
 
+# Bliz
+
+**A lightweight, Vite‑like development server and build tool built on top of esbuild.**
+
+---
+
+## Features
+
+* ⚡ Fast dev server with static file serving
+* 🔥 Hot‑module‑replacement (HMR) via WebSocket
+* 📦 Production build using esbuild (bundling, minification, sourcemaps)
+* ⚙️ Simple configuration file: `bliz.config.js`
+* 💻 CLI commands: `bliz dev` and `bliz build`
+
+---
+
+## Installation
+
 ### Global install
 
 ```bash
 npm i -g @graphstats/bliz
 ```
 
-### As a dev dependency
+⚠️ Don't use:
+```bash
+npm i @graphstats/bliz
+```
+Because it will not add the package to the PATH!
 
 MIT
 **⚠️ UNDER BETA!**
