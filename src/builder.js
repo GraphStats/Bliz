@@ -104,7 +104,8 @@ module.exports = async function builder(userConfig = {}) {
                 platform,
                 target: ['esnext'],
                 define: { 'process.env.NODE_ENV': '"production"' },
-                plugins: userConfig.plugins || []
+                plugins: userConfig.plugins || [],
+                conditions: ['style', 'browser', 'import', 'default'] // <-- Added for Tailwind CSS support
             });
             console.log('✨ Build completed successfully (JS mode).');
         } else {
