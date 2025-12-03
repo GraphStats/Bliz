@@ -22,20 +22,66 @@ module.exports = async function builder(userConfig = {}) {
 
     // Framework Handling
     if (entry.type === 'framework') {
-        console.log(`📦 Detected ${entry.framework} project.`);
-        console.log('🚀 Delegating build to framework CLI...');
+        // Ajout de la détection de frameworks supplémentaires
+        const knownFrameworks = [
+            'vite',
+            'next',
+            'nuxt',
+            'astro',
+            'svelte-kit',
+            'remix',
+            'angular',
+            'solid-start',
+            'qwik'
+        ];
 
-        const { execSync } = require('child_process');
-        try {
-            const pkg = await fs.readJson(path.join(root, 'package.json')).catch(() => ({}));
-            const buildCmd = pkg.scripts && pkg.scripts.build ? 'npm run build' : `npx ${entry.framework} build`;
+        const framework = entry.framework;
+        if (knownFrameworks.includes(framework)) {
+            console.log(`📦 Detected ${framework} project.`);
+            console.log('🚀 Delegating build to framework CLI...');
 
-            console.log(`> ${buildCmd}`);
-            execSync(buildCmd, { stdio: 'inherit', cwd: root });
-            console.log('✨ Build completed successfully (Framework mode).');
-            return;
-        } catch (err) {
-            console.error('❌ Framework build failed:', err.message);
+            const { execSync } = require('child_process');
+            try {
+                const pkg = await fs.readJson(path.join(root, 'package.json')).catch(() => ({}));
+                // Commande par défaut pour chaque framework
+                let buildCmd = pkg.scripts && pkg.scripts.build ? 'npm run build' : '';
+
+                if (!buildCmd) {
+                    switch (framework) {
+                        case 'vite':
+                        case 'astro':
+                        case 'svelte-kit':
+                        case 'solid-start':
+                        case 'qwik':
+                            buildCmd = `npx ${framework} build`;
+                            break;
+                        case 'next':
+                            buildCmd = `npx next build`;
+                            break;
+                        case 'nuxt':
+                            buildCmd = `npx nuxi build`;
+                            break;
+                        case 'remix':
+                            buildCmd = `npx remix build`;
+                            break;
+                        case 'angular':
+                            buildCmd = `npx ng build`;
+                            break;
+                        default:
+                            buildCmd = `npx ${framework} build`;
+                    }
+                }
+
+                console.log(`> ${buildCmd}`);
+                execSync(buildCmd, { stdio: 'inherit', cwd: root });
+                console.log('✨ Build completed successfully (Framework mode).');
+                return;
+            } catch (err) {
+                console.error('❌ Framework build failed:', err.message);
+                process.exit(1);
+            }
+        } else {
+            console.log(`❌ Framework "${framework}" not recognized for auto-build. Please build manually.`);
             process.exit(1);
         }
     }
