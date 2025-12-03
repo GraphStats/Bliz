@@ -1,4 +1,3 @@
-
 // src/devServer.js
 const http = require('http');
 const path = require('path');
@@ -14,6 +13,59 @@ module.exports = function devServer(userConfig = {}) {
 
     const { exec } = require('child_process');
     const net = require('net');
+
+    // Détection de frameworks pour déléguer au dev server natif
+    const pkgPath = path.join(root, 'package.json');
+    let framework = null;
+    if (fs.existsSync(pkgPath)) {
+        try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+            if (deps['vite']) framework = 'vite';
+            else if (deps['next']) framework = 'next';
+            else if (deps['nuxt']) framework = 'nuxt';
+            else if (deps['astro']) framework = 'astro';
+            else if (deps['@sveltejs/kit']) framework = 'svelte-kit';
+            else if (deps['@remix-run/dev']) framework = 'remix';
+            else if (deps['@angular/core']) framework = 'angular';
+            else if (deps['solid-start']) framework = 'solid-start';
+            else if (deps['@builder.io/qwik']) framework = 'qwik';
+        } catch {}
+    }
+
+    if (framework) {
+        // Commande de dev par défaut pour chaque framework
+        let devCmd = '';
+        switch (framework) {
+            case 'vite':
+            case 'astro':
+            case 'solid-start':
+            case 'qwik':
+                devCmd = `npx ${framework} dev`;
+                break;
+            case 'next':
+                devCmd = `npx next dev -p ${port}`;
+                break;
+            case 'nuxt':
+                devCmd = `npx nuxi dev -p ${port}`;
+                break;
+            case 'svelte-kit':
+                devCmd = `npx svelte-kit dev --port ${port}`;
+                break;
+            case 'remix':
+                devCmd = `npx remix dev --port ${port}`;
+                break;
+            case 'angular':
+                devCmd = `npx ng serve --port ${port}`;
+                break;
+            default:
+                devCmd = `npx ${framework} dev`;
+        }
+        console.log(`📦 Detected ${framework} project.`);
+        console.log(`🚀 Delegating dev server to: ${devCmd}`);
+        exec(devCmd, { cwd: root, stdio: 'inherit' });
+        return;
+    }
 
     // Helper: Find available port
     const findAvailablePort = (startPort) => {
