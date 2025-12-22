@@ -3,6 +3,8 @@
 **A lightweight, Vite‑like development server and build tool built on top of esbuild.**
 
 ---
+# ⚠️ Attention : Ce projet est terminé côté fonctionnalités, mais le code reste inachevé et ne sera plus mis à jour. 
+---
 
 ## Features
 
